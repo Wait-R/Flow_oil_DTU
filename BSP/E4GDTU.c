@@ -8,7 +8,7 @@ __IO uint8_t DTURX_buf[128] = { 0 };       		// 接收命令缓存数组
 __IO uint8_t DTURX_Data[1] = { 0 };		   		// 接收字节缓存
 __IO uint16_t DTURX_cnt = 0, DTURX_cntPre = 0;  // 接收累计计数、接收上次计数
 char mqtt_payload[128] = { 0 };					// MQTT发布载荷缓存
-char mqtt_Contrast[128] = { 0 };				// MQTT对比载荷缓存
+// char mqtt_Contrast[128] = { 0 };				// MQTT对比载荷缓存
 
 /**
  * @brief 清空缓存
@@ -101,10 +101,10 @@ static uint8_t DTU_SendCommandRaw(const char* cmd, char *res)
  */
 uint8_t DTU_RESET(void)
 {
-	HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_RESET); // 先拉低强制关机
+	HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET); // 先拉低强制关机
 	vTaskDelay(300);
-	HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET); // 恢复
-	vTaskDelay(500);
+	HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_RESET); // 恢复
+	vTaskDelay(2000);
 	DTU_Clear();
 	return OK;
 }
@@ -116,7 +116,7 @@ uint8_t DTU_RESET(void)
  */
 uint8_t DTU_OFF(void)
 {
-	HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_RESET); // 先拉低 关机
+	HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET); // 先拉低 关机
 	return OK;
 }
 
@@ -127,8 +127,8 @@ uint8_t DTU_OFF(void)
  */
 uint8_t DTU_ON(void)
 {
-	HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET);   // 恢复
-	vTaskDelay(1000);
+	HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_RESET);   // 恢复
+	vTaskDelay(2000);
 	DTU_Clear();
 	return OK;
 }
@@ -201,7 +201,7 @@ uint8_t DTU_Init(void)
 	vTaskDelay(100);
 
 	printf("5. AT+MQTTCONN=esp8266Client,test,12345678,60,1...\r\n");    	// 设置MQTT连接参数
-	while(DTU_SendCmd("AT+MQTTCONN=esp8266Client,test,12345678,60,1\r\n", "OK")) {
+	while(DTU_SendCmd("AT+MQTTCONN=esp8266Client,test,12345678,120,1\r\n", "OK")) {
 		vTaskDelay(100);
 		time_out += 1;
 		if(time_out > DF_TIMEOUT) {
@@ -269,7 +269,7 @@ static uint8_t DTU_Send_DataFloat_Internal(OilDataWithTime* oil_data)
 	}
 	vTaskDelay(50);
 	memset(mqtt_payload, 0, sizeof(mqtt_payload));  // 清空载荷缓存
-	memset(mqtt_Contrast, 0, sizeof(mqtt_Contrast));  // 清空对比载荷缓存
+	// memset(mqtt_Contrast, 0, sizeof(mqtt_Contrast));  // 清空对比载荷缓存
 
 	return OK;
 }

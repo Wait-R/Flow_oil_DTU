@@ -11,23 +11,8 @@
 #include "E4GDTU.h"
 #include "OLED.h"
 #include "Key.h"
-#include "stm32f1xx_hal_rtc.h"
 
 uint8_t upload_pending = 0;  /* 开始加油标志 */
-
-/* LED灯闪烁 */
-void LED_Task(void const* argument)
-{
-  HAL_IWDG_Init(&hiwdg);
-	
-  for(;;) {
-    LED_ON();
-    vTaskDelay(300);
-    LED_OFF();
-    vTaskDelay(4700);
-    HAL_IWDG_Refresh(&hiwdg); // 喂狗
-  }
-}
 
 /* 上传数据 */
 void UploadData_Task(void const * argument)
@@ -41,8 +26,6 @@ void UploadData_Task(void const * argument)
   else {
     printf("DTU模块初始化失败\r\n");
   }
-  printf("当前RTC时间戳：%ld\r\n", convert_to_timestamp());
-  vTaskDelay(500);
 
   if(convert_to_timestamp() < get_compile_timestamp()) { /* 如果当前时间小于编译时间-进行校准 */
     printf("RTC时间异常，正在校准RTC时间...\r\n");
@@ -60,6 +43,8 @@ void UploadData_Task(void const * argument)
   {
     xTaskNotifyWait(0x00, EVENTBIT_0, &notify_value, 0);
     if(notify_value & EVENTBIT_0) {
+      DTU_ON();
+      vTaskDelay(10000);
       // 执行校准时间函数
       if(DTU_Get_NTP_Time()==OK) {
         printf("RTC时间校准成功\r\n");
@@ -82,8 +67,12 @@ void UploadData_Task(void const * argument)
         }
       }
       else {
-        if(xQueueSend(RequestQueueHandle,&notify_value,0) != pdPASS) {
+        printf("DTU模块MQTT已连接，准备上传数据...\r\n");
+        if(xQueueSend(RequestQueueHandle, &notify_value, 0) != pdPASS) {
 			    printf("错误：无法申请数据\r\n");
+        }
+        else {
+          printf("已请求读取数据\r\n");
         }
         if(xQueueReceive(UploadQueueHandle, &read_data, 10000) == pdPASS) {
           if(DTU_Send_DataFloat(&read_data) == OK) {
@@ -116,10 +105,8 @@ void ProcesData_Task(void const * argument)
   last_result = Get_Traffic();
   printf("首次启动，仅记录初始流量 %.3f L,不上传\r\n", result);
   
-
-  // for (int16_t i = 0; i < 10; i++)
+  // for (int16_t i = 0; i < 3; i++)
   // {
-  //   vTaskDelay(20000);
   //   result = 101 + 0.1 * i; // 模拟初始流量
   //   xQueueSend(SendQueueHandle, &result, 2000); // 发送测试
   // }
@@ -219,10 +206,10 @@ void StorageData_Task(void const * argument)
 /*oled 显示任务*/
 void oled_Task(void const* argument)
 {
-  uint8_t oled_Mode = 1;  // 记录OLED显示模式
+  uint8_t oled_Mode = 0;  // 记录OLED显示模式
   uint8_t oled_Init_Flag = 0; // OLED初始化标志
-  char time_str[20];      // 时间字符串缓存
   char eeprom_str[20];    // EEPROM占用字符串缓存
+  char time_str[20];      // 时间字符串缓存
   float current_Max_Flow = 0.0f; // 历史最大流量值
 
   for(;;)
@@ -231,22 +218,37 @@ void oled_Task(void const* argument)
     if(Key_Check(KEY0, KEY_LONG)) {
       /* 长按按键 启动/关闭 OLED */
       oled_Mode++;
-      if(oled_Mode > 1) {
+      if(oled_Mode > 2) {
         oled_Mode = 0;
+        if(oled_Mode == 2) {
+          oled_Init_Flag = 0; // 重置初始化标志
+        }
       }
     }
 
     if(Key_Check(KEY0, KEY_SINGLE)) {
       /* 单击按键 清除历史数据 */
       current_Max_Flow = 0;
+      LED_Toggle();
+      vTaskDelay(200);
+      LED_Toggle();
     }
 
     if(Key_Check(KEY0, KEY_DOUBLE)) {
+      printf("准备校准时间\r\n");
       /* 双击按键 重新校准时间 */
+      LED_Toggle();
+      vTaskDelay(150);
+      LED_Toggle();
+      vTaskDelay(300);
+      LED_Toggle();
+      vTaskDelay(150);
+      LED_Toggle();
       xTaskNotifyFromISR(UploadDataTaskHandle, EVENTBIT_0, eSetBits, pdFALSE);// 通知上传任务校准时间
     }
 
     if(oled_Mode == 0) {
+      LED_OFF();
       /* 不显示 */
       if(oled_Init_Flag == 1) {
         OLED_Clear();
@@ -256,6 +258,7 @@ void oled_Task(void const* argument)
       vTaskDelay(200);
     }
     else if(oled_Mode == 1) {
+      LED_Toggle();
       /* 显示模式：初始化OLED（首次开启时）并更新显示内容 */
       if(oled_Init_Flag == 0) {
         OLED_Init();
@@ -272,34 +275,66 @@ void oled_Task(void const* argument)
       /* 显示当前空间使用情况 */
       uint16_t used_count = get_Data_Page_Count();  // 已存储数据个数
       uint16_t total_count = 2016;                  // 最大可存储数据个数
-      uint8_t usage_rate = (used_count * 100) / total_count;  // 占用率（%）
-      sprintf(eeprom_str, "EEPROM: %d/%d (%d%%)", used_count, total_count, usage_rate);
-      /* 显示时间 */
-      tm_t current_time;
-      RTC_GET_TIME(&current_time);
-      sprintf(time_str, "%04d-%02d-%02d %02d:%02d:%02d",
-              current_time.tm_year + 1900,  // 年份修正
-              current_time.tm_mon + 1,     // 月份修正（0-11→1-12）
-              current_time.tm_mday,
-              current_time.tm_hour,
-              current_time.tm_min,
-        current_time.tm_sec);
+      sprintf(eeprom_str, "EEPROM: %d/%d", used_count, total_count);
+      uint32_t timestamp = convert_to_timestamp();
+      sprintf(time_str,"%04d-%02d-%02d %02d:%02d:%02d",
+              get_year(timestamp, 8),
+              get_month(timestamp, 8),
+              get_day(timestamp, 8),
+              get_hour(timestamp, 8),
+              get_minute(timestamp, 8),
+              get_second(timestamp, 8));
 
-      /* 显示内容更新（每行16像素高，8x16字体）*/
-      // 第一行：当前油量（保留2位小数）
-      OLED_Printf(0, 0, OLED_8X16, "Flow: %.2f L      ", current_flow);
-      // 第二行：历史最大油量（保留2位小数）
-      OLED_Printf(0, 16, OLED_8X16, "Max: %.2f L       ", current_Max_Flow);
+      /* 显示内容更新 */
+      // 第一行：当前油量
+      OLED_Printf(0, 0, OLED_8X16, "flow: %.2f L      ", current_flow);
+      // 第二行：历史最大油量
+      OLED_Printf(0, 16, OLED_8X16, "MAX: %.2f L       ", current_Max_Flow);
       // 第三行：EEPROM占用情况
-      OLED_Printf(0, 32, OLED_6X8, "%s", eeprom_str);
+      OLED_Printf(0, 32, OLED_6X8, "%s    ", eeprom_str);
       // 第四行：当前时间
       OLED_Printf(0, 40, OLED_6X8, "%s", time_str);
+      // printf("time:%s\r\n", time_str);
       // 第五行：累计加油次数
-      OLED_Printf(0, 48, OLED_6X8, "Count:%d", eeprom_Count);
+      OLED_Printf(0, 48, OLED_6X8, "Count:%d       ", eeprom_Count);
+      static uint8_t dot_pos = 0;
+      /* 动态点缀效果 */
+      dot_pos = !dot_pos;
+      if(dot_pos)
+        OLED_Printf(86, 48, OLED_6X8, " Rain");
+      else
+        OLED_Printf(86, 48, OLED_6X8, "@Rain");
       /* 刷新OLED显示 */
       OLED_Update();
-
       vTaskDelay(1000); // 每秒更新一次
+    }
+    else if(oled_Mode == 2) {
+      LED_Toggle();
+      if(oled_Init_Flag == 0) {
+        OLED_Init();
+        OLED_Clear();
+        OLED_Update();
+        oled_Init_Flag = 1;
+      }
+      /* 显示任务状态 */
+      static uint8_t oled_pow2 = 0;
+      oled_pow2 = !oled_pow2;
+      if(oled_pow2) {
+        OLED_Printf(0, 0, OLED_6X8, "Task Remain Stack:   ");
+      }
+      else {
+        OLED_Printf(0, 0, OLED_6X8, "Task Remain Stack:  *");
+      }
+      OLED_Printf(0, 8, OLED_6X8, "---------------------");
+      OLED_Printf(0, 16, OLED_6X8, "oledTask:   %03d Bit   ", uxTaskGetStackHighWaterMark(oledTaskHandle));
+      OLED_Printf(0, 24, OLED_6X8, "UploadTask: %03d Bit   ", uxTaskGetStackHighWaterMark(UploadDataTaskHandle));
+      OLED_Printf(0, 32, OLED_6X8, "ProcesTask: %03d Bit   ", uxTaskGetStackHighWaterMark(ProcesDataTaskHandle));
+      OLED_Printf(0, 40, OLED_6X8, "StorageTask:%03d Bit   ", uxTaskGetStackHighWaterMark(StorageDataTaskHandle));
+      OLED_Printf(0, 48, OLED_6X8, "defaultTask:%03d Bit   ", uxTaskGetStackHighWaterMark(defaultTaskHandle));
+      OLED_Printf(0, 56, OLED_6X8, "---------------------");
+      /* 刷新OLED显示 */
+      OLED_Update();
+      vTaskDelay(2000);
     }
   }
 }

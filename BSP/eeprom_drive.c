@@ -18,6 +18,15 @@ static uint8_t data_status[(MAX_DATA_COUNT + 7) / 8];  // 数据状态位图（1位表示1
 static uint16_t eeprom_data_count = 0;  // 当前存储的数据总数
 uint32_t eeprom_Count = 0; // 存储加油次数
 
+/************************************************
+EEPROM 数据存储布局：
+- 第0页：存储初始化标志
+- 第1页：存储时间戳（以弃用）
+- 第2页：存储加油次数
+- 第3页：保留
+- 第4页起：存储 OilDataWithTime 结构体数据
+************************************************/
+
 /**
  * @brief 将数据索引转换为EEPROM物理地址
  * @param index 数据索引（0~MAX_DATA_COUNT-1）
@@ -429,7 +438,7 @@ uint8_t eeprom_read_counter(uint32_t *counter)
         return 1;
     }
 
-    // 将字节数组转换为 uint32_t（小端模式，适配多数 MCU）
+    // 将字节数组转换为 uint32_t（小端模式）
     *counter = (uint32_t)buf[0] | 
                (uint32_t)buf[1] << 8 | 
                (uint32_t)buf[2] << 16 | 

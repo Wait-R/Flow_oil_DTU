@@ -26,6 +26,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "eeprom_drive.h"
+#include "stdio.h"
+#include "led.h"
+#include "iwdg.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,7 +53,6 @@
 osThreadId defaultTaskHandle;
 osThreadId UploadDataTaskHandle;
 osThreadId ProcesDataTaskHandle;
-osThreadId LEDTaskHandle;
 osThreadId StorageDataTaskHandle;
 osThreadId oledTaskHandle;
 osMessageQId SendQueueHandle;
@@ -66,7 +68,6 @@ osMessageQId DeleteQueueHandle;
 void StartDefaultTask(void const * argument);
 void UploadData_Task(void const * argument);
 void ProcesData_Task(void const * argument);
-void LED_Task(void const * argument);
 void StorageData_Task(void const * argument);
 void oled_Task(void const * argument);
 
@@ -121,19 +122,15 @@ void MX_FREERTOS_Init(void) {
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* definition and creation of UploadDataTask */
-  osThreadDef(UploadDataTask, UploadData_Task, osPriorityAboveNormal, 0, 512);
+  osThreadDef(UploadDataTask, UploadData_Task, osPriorityAboveNormal, 0, 256);
   UploadDataTaskHandle = osThreadCreate(osThread(UploadDataTask), NULL);
 
   /* definition and creation of ProcesDataTask */
-  osThreadDef(ProcesDataTask, ProcesData_Task, osPriorityNormal, 0, 384);
+  osThreadDef(ProcesDataTask, ProcesData_Task, osPriorityNormal, 0, 256);
   ProcesDataTaskHandle = osThreadCreate(osThread(ProcesDataTask), NULL);
 
-  /* definition and creation of LEDTask */
-  osThreadDef(LEDTask, LED_Task, osPriorityLow, 0, 128);
-  LEDTaskHandle = osThreadCreate(osThread(LEDTask), NULL);
-
   /* definition and creation of StorageDataTask */
-  osThreadDef(StorageDataTask, StorageData_Task, osPriorityHigh, 0, 512);
+  osThreadDef(StorageDataTask, StorageData_Task, osPriorityHigh, 0, 256);
   StorageDataTaskHandle = osThreadCreate(osThread(StorageDataTask), NULL);
 
   /* definition and creation of oledTask */
@@ -156,10 +153,12 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
+  HAL_IWDG_Init(&hiwdg);
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    vTaskDelay(4000);
+    HAL_IWDG_Refresh(&hiwdg); // ι��
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -198,24 +197,6 @@ __weak void ProcesData_Task(void const * argument)
     osDelay(1);
   }
   /* USER CODE END ProcesData_Task */
-}
-
-/* USER CODE BEGIN Header_LED_Task */
-/**
-* @brief Function implementing the LEDTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_LED_Task */
-__weak void LED_Task(void const * argument)
-{
-  /* USER CODE BEGIN LED_Task */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END LED_Task */
 }
 
 /* USER CODE BEGIN Header_StorageData_Task */

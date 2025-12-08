@@ -33,6 +33,12 @@ void MX_RTC_Init(void)
 
   /* USER CODE BEGIN RTC_Init 0 */
 
+  hrtc.Instance = RTC;
+	hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
+	hrtc.Init.OutPut = RTC_OUTPUTSOURCE_ALARM;
+  KK_RTC_Init();
+  return;
+
   // hrtc.Instance = RTC;
 	// hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
   // hrtc.Init.OutPut = RTC_OUTPUTSOURCE_ALARM;

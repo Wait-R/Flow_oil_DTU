@@ -21,6 +21,17 @@ time_t get_compile_timestamp(void);
 
 // time_t AsOfTime(void);
 
+HAL_StatusTypeDef KK_RTC_SetTime(struct tm *time);
+struct tm *KK_RTC_GetTime(void);
+void KK_RTC_Init(void);
+
+int get_year(long long timestamp, int timezone_offset);
+int get_month(long long timestamp, int timezone_offset);
+int get_day(long long timestamp, int timezone_offset);
+int get_hour(long long timestamp, int timezone_offset);
+int get_minute(long long timestamp, int timezone_offset);
+int get_second(long long timestamp, int timezone_offset);
+
 
 #endif
 

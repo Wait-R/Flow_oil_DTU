@@ -48,3 +48,6 @@ flow_oil_v5\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event
 flow_oil_v5\freertos.o: ../BSP/eeprom_drive.h
 flow_oil_v5\freertos.o: ../BSP/at24c64.h
 flow_oil_v5\freertos.o: C:\Users\Rain\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\time.h
+flow_oil_v5\freertos.o: C:\Users\Rain\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+flow_oil_v5\freertos.o: ../BSP/led.h
+flow_oil_v5\freertos.o: ../Core/Inc/iwdg.h

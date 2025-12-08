@@ -21,7 +21,6 @@
 extern osThreadId defaultTaskHandle;
 extern osThreadId UploadDataTaskHandle;
 extern osThreadId ProcesDataTaskHandle;
-extern osThreadId LEDTaskHandle;
 extern osThreadId StorageDataTaskHandle;
 extern osThreadId oledTaskHandle;
 extern osMessageQId SendQueueHandle;    /* ´«µÝ´æ´¢¶ÓÁÐ¾ä±ú */

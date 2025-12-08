@@ -2,7 +2,10 @@
 #include "flowConfig.h"
 
 __IO uint32_t CAPTURE_COUNT = 0;   // 流量数据保存处
-double coefficient = 0.013723032826; // 流量系数
+double coefficient = 0.013723032826; // 流量系数（服务器端调整，无需修改）
+
+/*            有能力的话可以改为输入捕获计量脉冲            */
+/*               保持这两个对外接口不变即可                */
 
 /**
  * @brief 清除流量数据

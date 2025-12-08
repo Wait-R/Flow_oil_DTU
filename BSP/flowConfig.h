@@ -9,6 +9,7 @@
 /* 油罐车序号 */
 #define SERIAL_NUMBER 4
 
+
 /* ESP8266 初始化超时重试次数 */
 #define DF_TIMEOUT 2
 

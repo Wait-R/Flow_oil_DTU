@@ -15,8 +15,6 @@ extern uint32_t eeprom_Count; // 存储加油次数
 #define COUNT_PAGE_ADDR        PAGE_ADDR(0)    // 第0页  保存初始化标志
 
 #define TIME_PAGE1_ADDR        PAGE_ADDR(1)    // 第1页  存储时间 
-#define TIME_PAGE2_ADDR        PAGE_ADDR(2)    // 第2页  存储流量系数
-#define TIME_PAGE3_ADDR        PAGE_ADDR(3)    // 第3页  存储时间
 
 #define COEFFICIENT_PAGE_ADDR  PAGE_ADDR(2)    // 第2页  存储加油次数
 

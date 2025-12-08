@@ -4,8 +4,8 @@
 #define KEY_PRESSED				1
 #define KEY_UNPRESSED			0
 
-#define KEY_TIME_DOUBLE			200
-#define KEY_TIME_LONG			2000
+#define KEY_TIME_DOUBLE			300
+#define KEY_TIME_LONG			1200
 #define KEY_TIME_REPEAT			1000
 
 uint8_t Key_Flag[KEY_COUNT];
