@@ -1,0 +1,12 @@
+flow_oil_v5\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/list.c
+flow_oil_v5\list.o: C:\Users\Rain\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+flow_oil_v5\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+flow_oil_v5\list.o: C:\Users\Rain\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+flow_oil_v5\list.o: C:\Users\Rain\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+flow_oil_v5\list.o: ../Core/Inc/FreeRTOSConfig.h
+flow_oil_v5\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+flow_oil_v5\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+flow_oil_v5\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+flow_oil_v5\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/portmacro.h
+flow_oil_v5\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+flow_oil_v5\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h

@@ -1,0 +1,13 @@
+flow_oil_v5\heap_4.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
+flow_oil_v5\heap_4.o: C:\Users\Rain\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+flow_oil_v5\heap_4.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+flow_oil_v5\heap_4.o: C:\Users\Rain\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+flow_oil_v5\heap_4.o: C:\Users\Rain\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+flow_oil_v5\heap_4.o: ../Core/Inc/FreeRTOSConfig.h
+flow_oil_v5\heap_4.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+flow_oil_v5\heap_4.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+flow_oil_v5\heap_4.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+flow_oil_v5\heap_4.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/portmacro.h
+flow_oil_v5\heap_4.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+flow_oil_v5\heap_4.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+flow_oil_v5\heap_4.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
