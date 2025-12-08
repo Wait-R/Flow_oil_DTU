@@ -7,6 +7,8 @@
 #include "string.h"
 #include "Capture_Traffic.h"
 #include <math.h>
+#include "myRTC.h"
+#include "app_menu.h"
 
 #define OIL_DATA_LEN  sizeof(OilDataWithTime)  // 结构体字节数（8字节）
 #define DATA_PER_PAGE (AT24C128_PAGE_SIZE / OIL_DATA_LEN)  // 每页存储的数据个数（64/8=8）
@@ -21,7 +23,7 @@ uint32_t eeprom_Count = 0; // 存储加油次数
 /************************************************
 EEPROM 数据存储布局：
 - 第0页：存储初始化标志
-- 第1页：存储时间戳（以弃用）
+- 第1页：存储时间戳
 - 第2页：存储加油次数
 - 第3页：保留
 - 第4页起：存储 OilDataWithTime 结构体数据
@@ -194,8 +196,8 @@ uint8_t record_Oil(OilDataWithTime oil_data)
 void read_Oil_Data(void)
 {
     uint8_t received_request;
-    if(xQueueReceive(RequestQueueHandle, &received_request, 0) == pdPASS) { /* 获取二值信号量 */
-        printf("已接收请求\r\n");
+    if(xQueueReceive(RequestQueueHandle, &received_request, 0) == pdPASS) { /* 获取二值信号量 */  
+			_log(LOG_DEBUG,"已接收请求");
 
         // 查找最后一条有数据的索引
         int16_t last_index = -1;
@@ -207,7 +209,7 @@ void read_Oil_Data(void)
         }
         
         if (last_index == -1) {
-            printf("无数据可读取\r\n");
+					_log(LOG_WARN,"无数据可读取");
             return;
         }
         
@@ -218,11 +220,11 @@ void read_Oil_Data(void)
 
         // 发送到上传队列
         if (xQueueSend(UploadQueueHandle, &read_data, 0) != pdPASS) {
-            printf("错误：数据无法发送到上传队列\r\n");
+					_log(LOG_ERROR,"错误：数据无法发送到上传队列");
             return;
         }
         else {
-            printf("数据:%.3f 已发送到上传队列\r\n", read_data.oil_flow);
+					_log(LOG_DEBUG,"数据:%.3f 已发送到上传队列", read_data.oil_flow);
             // 等待上传完成信号
             if (xQueueReceive(DeleteQueueHandle, &received_request, 10000) == pdPASS) {
                 // 擦除该数据（填充0xFF）
@@ -235,10 +237,10 @@ void read_Oil_Data(void)
                 set_data_status(last_index, 0);
                 eeprom_data_count--;
                 
-                printf("成功上传,本地删除,剩余：%d\r\n", get_Data_Page_Count());
+							_log(LOG_DEBUG,"成功上传,本地删除,剩余：%d", get_Data_Page_Count());
             }
             else {
-                printf("上传失败\r\n");
+							_log(LOG_WARN,"上传失败");
             }
         }
     }
@@ -250,8 +252,8 @@ void read_Oil_Data(void)
  */
 void print_All_Data_Pages(void)
 {
-    printf("=== EEPROM数据信息 ===\n");
-    printf("总数据量: %d/%d\n", eeprom_data_count, MAX_DATA_COUNT);
+	_log(LOG_DEBUG, "=== EEPROM数据信息 ===");
+	_log(LOG_DEBUG, "总数据量: %d/%d", eeprom_data_count, MAX_DATA_COUNT);
     
     uint16_t count = 0;
     // 遍历所有数据位置，打印有效数据
@@ -259,14 +261,14 @@ void print_All_Data_Pages(void)
         if (is_data_used(i)) {
             OilDataWithTime data;
             x24Cxx_Read_float(data_index_to_addr(i), &data);
-            printf("索引%d: 地址0x%04X, 数据: %.2f | %lu\r\n",
-                   i, data_index_to_addr(i), data.oil_flow, data.time_stamp);
+					_log(LOG_DEBUG, "索引%d: 地址0x%04X, 数据: %.2f | %lu",
+														i, data_index_to_addr(i), data.oil_flow, data.time_stamp);
             count++;
             if (count >= eeprom_data_count) break;  // 已打印所有数据，提前退出
         }
     }
     if (count == 0) {
-        printf("没有找到数据\n");
+			_log(LOG_DEBUG, "没有找到数据");
     }
 }
 
@@ -277,34 +279,6 @@ void print_All_Data_Pages(void)
 uint16_t get_Data_Page_Count(void)
 {
     return eeprom_data_count;
-}
-
-/**
- * @brief 从EEPROM读取存储的时间
- * @return 读取到的时间（time_t类型），0表示未存储时间
- */
-time_t Read_eeprom_Time(void)
-{
-    uint8_t time_buffer[4];
-    AT24C128_ReadBuffer(TIME_PAGE1_ADDR, time_buffer, 4);
-    // 检查是否为未初始化状态（全0xFF）
-    if (time_buffer[0] == 0xFF && time_buffer[1] == 0xFF &&
-        time_buffer[2] == 0xFF && time_buffer[3] == 0xFF) {
-        return 0;  // 未存储时间
-    }
-    return *(time_t*)time_buffer;
-}
-
-/**
- * @brief 向EEPROM写入时间
- * @param current_time 要存储的时间（time_t类型）
- */
-void Write_eeprom_Time(time_t current_time)
-{
-    uint8_t time_buffer[4];
-    *(time_t *)time_buffer = current_time;  // 转换为字节数组
-    AT24C128_WritePage(TIME_PAGE1_ADDR, time_buffer, 4);
-    delay_ms(5);  // 等待写入完成
 }
 
 /**
@@ -322,88 +296,6 @@ void AT24C128_EraseAll(void)
         AT24C128_WritePage(page_addr, blank_page, AT24C128_PAGE_SIZE);
         delay_ms(5);  // 等待每页写入完成
     }
-}
-
-/**
- * @brief 从第2页读取存储的double类型数据
- * @param data 存储读取结果的double指针
- * @return 0:成功，1:数据未初始化（未写入过），2:指针无效, 3:数据非法
- */
-uint8_t eeprom_read_double_from_page2(double *data)
-{
-    if (data == NULL) {
-        return 2;
-    }
-
-    uint8_t buf[sizeof(double)];
-    // 读取第2页起始地址的8字节数据
-    AT24C128_ReadBuffer(COEFFICIENT_PAGE_ADDR, buf, sizeof(double));
-
-    // 严格判断是否全为0xFF（未初始化）
-    uint8_t is_uninit = 1;
-    for (uint8_t i = 0; i < sizeof(double); i++) {
-        if (buf[i] != 0xFF) {
-            is_uninit = 0;
-            break;
-        }
-    }
-    if (is_uninit) {
-        *data = 0.0; // 避免data残留脏数据
-        return 1;
-    }
-
-    // 将字节数组转换为double后，额外判断是否为nan或inf
-    memcpy(data, buf, sizeof(double));
-    if (isnan(*data) || isinf(*data)) {
-        *data = 0.0;
-        return 3; // 新增返回值：数据非法（nan/inf）
-    }
-
-    return 0;
-}
-
-/**
- * @brief 擦除第2页存储的double类型数据（填充0xFF）
- * @return 0:成功
- */
-uint8_t eeprom_erase_double_from_page2(void)
-{
-    uint8_t blank[sizeof(double)];
-    memset(blank, 0xFF, sizeof(double));  // EEPROM擦除值为0xFF
-
-    // 向第2页起始地址写入8字节0xFF，覆盖原double数据
-    AT24C128_WritePage(COEFFICIENT_PAGE_ADDR, blank, sizeof(double));
-    delay_ms(5);  // 等待EEPROM写入完成
-
-    return 0;
-}
-
-/**
- * @brief 向第2页写入double类型数据
- * @param data 要存储的double数据
- * @return 0:成功，1:写入失败（校验不通过）
- */
-uint8_t eeprom_write_double_to_page2(double data)
-{
-    uint8_t buf[sizeof(double)];
-    // 将double转换为字节数组
-    memcpy(buf, &data, sizeof(double));
-
-    // 向第2页起始地址写入8字节（double占8字节）
-    AT24C128_WritePage(COEFFICIENT_PAGE_ADDR, buf, sizeof(double));
-    delay_ms(5);  // 等待EEPROM写入完成
-
-    // 数据校验：写入后立即读取，确保数据正确
-    double read_back;
-    if (eeprom_read_double_from_page2(&read_back) != 0) {
-        return 1;  // 读取校验失败
-    }
-    // 对比写入值和读取值（允许浮点数微小误差）
-    if (fabs(read_back - data) > 1e-6) {
-        return 1;  // 数据不一致，写入失败
-    }
-
-    return 0;  // 成功
 }
 
 #define COUNTER_ADDR (COEFFICIENT_PAGE_ADDR + 8) // 假设 double 占 8 字节，整数从第 8 字节开始
@@ -486,40 +378,232 @@ uint8_t eeprom_increment_counter(void)
         return 1; // 校验失败，写入异常
     }
 
-    // printf("计数器自增成功：%u → %u\r\n", current_counter, new_counter);
+		_log(LOG_DEBUG, "计数器自增成功：%u → %u", current_counter, new_counter);
     return 0;
 }
 
-// void eeprom_Coefficient_Init(void)
-// {
-//     vTaskDelay(10); // 等待系统稳定
-//     double stored_coefficient = 0;
-//     uint8_t result = eeprom_read_double_from_page2(&stored_coefficient);
-//     switch(result) {
-//         case 0:
-//             coefficient = stored_coefficient;
-//             printf("读取流量系数: %.15f\r\n", coefficient);
-//             break;
-//         case 1:
-//             coefficient = COEFFICIENT; // 默认系数
-//             printf("流量系数未设置，使用默认值: %.15f\r\n", coefficient);
-//             eeprom_write_double_to_page2(COEFFICIENT); // 初始化流量系数存储
-//             break;
-//         case 2:
-//             coefficient = COEFFICIENT;
-//             printf("读取流量系数失败：指针无效，使用默认值: %.15f\r\n", coefficient);
-//             break;
-//         case 3:
-//             coefficient = COEFFICIENT;
-//             printf("读取流量系数非法（nan/inf），使用默认值: %.15f\r\n", coefficient);
-//             // 可选：擦除非法数据，避免下次读取仍出错
-//             eeprom_erase_double_from_page2();
-//             eeprom_write_double_to_page2(COEFFICIENT); // 初始化流量系数存储
-//             break;
-//         default:
-//             coefficient = COEFFICIENT;
-//             printf("读取流量系数异常，使用默认值: %.15f\r\n", coefficient);
-//             break;
-//     }
-//     vTaskDelay(100); // 等待系统稳定
-// }
+/**
+ * @brief 从EEPROM读取存储的时间
+ * @return 读取到的时间（time_t类型），0表示未存储时间
+ */
+time_t Read_eeprom_Time(void)
+{
+    uint8_t time_buffer[4];
+    AT24C128_ReadBuffer(TIME_PAGE1_ADDR, time_buffer, 4);
+    // 检查是否为未初始化状态（全0xFF）
+    if (time_buffer[0] == 0xFF && time_buffer[1] == 0xFF &&
+        time_buffer[2] == 0xFF && time_buffer[3] == 0xFF) {
+        return 0;  // 未存储时间
+    }
+    return *(time_t*)time_buffer;
+}
+
+/**
+ * @brief 向EEPROM写入时间
+ * @param current_time 要存储的时间（time_t类型）
+ */
+void Write_eeprom_Time(time_t current_time)
+{
+    uint8_t time_buffer[4];
+    *(time_t *)time_buffer = current_time;  // 转换为字节数组
+    AT24C128_WritePage(TIME_PAGE1_ADDR, time_buffer, 4);
+    delay_ms(5);  // 等待写入完成
+}
+
+/**
+ *@brief 自动更新时间戳判断
+ *@return 1:应该更新时间戳，0:不用更新时间戳
+*/
+uint8_t Auto_Update_TimeStamp(void)
+{
+    time_t stored_time = Read_eeprom_Time();
+    time_t current_time = convert_to_timestamp();
+
+    if (stored_time == 0) {
+        // EEPROM中无存储时间，需写入当前时间
+        Write_eeprom_Time(current_time);
+        return 1;
+    }
+    else if (current_time - stored_time > (DF_UPDATE_TIME * 24 * 3600)) {
+        // 超过设定天数，更新时间戳
+        Write_eeprom_Time(current_time);
+        return 1;
+    }
+    return 0;
+}
+
+// 设备参数存储结构体（含校验和，防止数据损坏）
+typedef struct {
+    uint8_t led_state;              // LED状态（0-4）
+    uint8_t U1_BaudRate;            // U1波特率（0-6）
+    uint8_t U3_BaudRate;            // U3波特率（0-6）
+    __IO uint8_t LOG_Detailed_inf;  // 日志详细程度（0-3）
+    uint8_t check_sum;              // 校验和（led_state ^ U1_BaudRate ^ U3_BaudRate ^ LOG_Detailed_inf）
+} DeviceParams_t;
+
+extern __IO uint8_t DTURX_Data[1];		   		// 接收字节缓存
+
+/**
+ * @brief 计算参数校验和（防止EEPROM数据损坏）
+ * @param params 参数结构体指针
+ * @return 校验和（led_state ^ U1_BaudRate ^ U3_BaudRate）
+ */
+static uint8_t calc_param_checksum(const DeviceParams_t *params)
+{
+    if (params == NULL) return 0;
+    // 校验和计算
+    return params->led_state ^ params->U1_BaudRate ^ params->U3_BaudRate ^ params->LOG_Detailed_inf;
+}
+
+/**
+ * @brief 上电读取EEPROM第三页的设备参数
+ * @note 1. 读取后对比默认值，不符则打警告日志
+ *       2. 即使数据无效/不符默认值，仍应用读取到的值
+ * @return 0:执行完成，1:参数校验失败，2:读取异常
+ */
+uint8_t eeprom_read_device_params(void)
+{
+    DeviceParams_t read_params;
+    uint8_t read_buf[sizeof(DeviceParams_t)] = {0};
+    uint8_t ret = 0;
+
+    // 1. 从EEPROM第三页读取参数数据
+    AT24C128_ReadBuffer(PARAM_PAGE_NUM, read_buf, sizeof(DeviceParams_t));
+    memcpy(&read_params, read_buf, sizeof(DeviceParams_t));
+
+    // 2. 校验数据有效性（校验和）
+    uint8_t calc_sum = calc_param_checksum(&read_params);
+    if (read_params.check_sum != calc_sum) {
+        _log(LOG_ERROR, "EEPROM参数校验失败！读取校验和:0x%02X, 计算值:0x%02X", read_params.check_sum, calc_sum);
+        return 1;
+    }
+
+    // 3. 检查参数范围（防止非法值）
+    if (read_params.led_state > 4) {
+        _log(LOG_ERROR, "EEPROM LED状态超出范围(%d)，默认值:%d", read_params.led_state, DEFAULT_LED_STATE);
+        return 1;
+    }
+    if (read_params.U1_BaudRate > 6) {
+        _log(LOG_ERROR, "EEPROM U1波特率超出范围(%d)，默认值:%d", read_params.U1_BaudRate, DEFAULT_U1_BAUDRATE);
+        return 1;
+    }
+    if (read_params.U3_BaudRate > 6) {
+        _log(LOG_ERROR, "EEPROM U3波特率超出范围(%d)，默认值:%d", read_params.U3_BaudRate, DEFAULT_U3_BAUDRATE);
+        return 1;
+    }
+    if (read_params.LOG_Detailed_inf > 3) {
+        _log(LOG_ERROR, "EEPROM 日志等级超出范围(%d)，默认值:%d", read_params.LOG_Detailed_inf, DEFAULT_LOG_DETAIL);
+        return 1;
+    }
+
+    // 4. 对比默认值
+    if (read_params.led_state != DEFAULT_LED_STATE) {
+        _log(LOG_WARN, "EEPROM LED状态与默认值不符！读取值:%d, 默认值:%d", read_params.led_state, DEFAULT_LED_STATE);
+    }
+    if (read_params.U1_BaudRate != DEFAULT_U1_BAUDRATE) {
+        _log(LOG_WARN, "EEPROM U1波特率与默认值不符！读取值:%d, 默认值:%d", read_params.U1_BaudRate, DEFAULT_U1_BAUDRATE);
+    }
+    if (read_params.U3_BaudRate != DEFAULT_U3_BAUDRATE) {
+        _log(LOG_WARN, "EEPROM U3波特率与默认值不符！读取值:%d, 默认值:%d", read_params.U3_BaudRate, DEFAULT_U3_BAUDRATE);
+    }
+    if (read_params.LOG_Detailed_inf != DEFAULT_LOG_DETAIL) {
+        _log(LOG_WARN, "EEPROM 日志等级与默认值不符！读取值:%d, 默认值:%d", read_params.LOG_Detailed_inf, DEFAULT_LOG_DETAIL);
+    }
+
+    // 5. 应用读取到的参数
+    led_state = read_params.led_state;
+    U1_BaudRate = read_params.U1_BaudRate;
+    U3_BaudRate = read_params.U3_BaudRate;
+    LOG_Detailed_inf = read_params.LOG_Detailed_inf; 
+
+    // 6. 配置串口波特率
+    int BaudRate1 = 0;
+    switch (U1_BaudRate)
+    {
+    case 0: BaudRate1 = 4800; break;
+    case 1: BaudRate1 = 9600; break;
+    case 2: BaudRate1 = 14400; break;
+    case 3: BaudRate1 = 19200; break;
+    case 4: BaudRate1 = 38400; break;
+    case 5: BaudRate1 = 115200; break;
+    case 6: BaudRate1 = 256000; break;
+    default:
+        _log(LOG_ERROR, "U1波特率参数非法，默认115200");
+        BaudRate1 = 115200;
+        break;
+    }
+    Runing_UARTSET_B(&huart1, BaudRate1, NULL);
+
+    int BaudRate3 = 0;
+    switch(U3_BaudRate)
+    {
+    case 0: BaudRate3 = 4800; break;
+    case 1: BaudRate3 = 9600; break;
+    case 2: BaudRate3 = 14400; break;
+    case 3: BaudRate3 = 19200; break;
+    case 4: BaudRate3 = 38400; break;
+    case 5: BaudRate3 = 115200; break;
+    case 6: BaudRate3 = 256000; break;
+    default:
+        _log(LOG_ERROR, "U3波特率参数非法，默认115200");
+        BaudRate3 = 115200;
+        break;
+    }
+    Runing_UARTSET_B(&huart3, BaudRate3, (uint8_t *)DTURX_Data);
+
+    // 7. 打印最终生效的参数
+    _log(LOG_DEBUG, "LED 参数意义- 0：led熄灭，1：常量，2：闪烁，3:信息交互时亮，4：出现警告以上错误时常亮");
+    _log(LOG_DEBUG, "日志等级 参数意义- 0：关闭DEBUG级别输出，1：简略DEBUG、WARN信息，2：简略DEBUG信息，3：不省略");
+    _log(LOG_DEBUG, "EEPROM参数读取完成 - LED:%d, U1波特率:%d, U3波特率:%d, 日志等级:%d",
+         led_state, BaudRate1, BaudRate3, LOG_Detailed_inf);
+
+    return ret;
+}
+
+/**
+ * @brief 运行时将当前设备参数保存到EEPROM第三页
+ * @note 写入后自动校验，确保数据一致性
+ * @return 0:保存成功，1:保存失败（校验不通过），2:参数非法
+ */
+uint8_t eeprom_save_device_params(void)
+{
+    // 1. 检查参数合法性
+    if (led_state > 4 || U1_BaudRate > 6 || U3_BaudRate > 6 || LOG_Detailed_inf > 3) {
+        _log(LOG_ERROR, "EEPROM参数保存失败！参数非法 - LED:%d, U1:%d, U3:%d, 日志等级:%d", 
+             led_state, U1_BaudRate, U3_BaudRate, LOG_Detailed_inf);
+        return 2;
+    }
+
+    // 2. 构建参数结构体并计算校验和
+    DeviceParams_t save_params = {
+        .led_state = led_state,
+        .U1_BaudRate = U1_BaudRate,
+        .U3_BaudRate = U3_BaudRate,
+        .LOG_Detailed_inf = LOG_Detailed_inf, // 赋值日志详细程度
+        .check_sum = calc_param_checksum(&save_params)
+    };
+
+    // 3. 转换为字节数组并写入EEPROM
+    uint8_t save_buf[sizeof(DeviceParams_t)] = {0};
+    memcpy(save_buf, &save_params, sizeof(DeviceParams_t));
+    AT24C128_WritePage(PARAM_PAGE_NUM, save_buf, sizeof(DeviceParams_t));
+    delay_ms(5); // 等待EEPROM写入完成
+
+    // 4. 校验写入结果
+    DeviceParams_t verify_params;
+    AT24C128_ReadBuffer(PARAM_PAGE_NUM, save_buf, sizeof(DeviceParams_t));
+    memcpy(&verify_params, save_buf, sizeof(DeviceParams_t));
+
+    if (memcmp(&save_params, &verify_params, sizeof(DeviceParams_t)) != 0) {
+        _log(LOG_ERROR, "EEPROM参数保存失败！写入值与读取值不一致");
+        return 1;
+    }
+
+    // 5. 保存成功日志
+    _log(LOG_DEBUG, "EEPROM参数保存成功 - LED:%d, U1波特率:%d, U3波特率:%d, 日志等级:%d", 
+         led_state, U1_BaudRate, U3_BaudRate, LOG_Detailed_inf);
+
+    return 0;
+}
+
+

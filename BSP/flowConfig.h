@@ -9,6 +9,14 @@
 /* 油罐车序号 */
 #define SERIAL_NUMBER 4
 
+/* 多久更新一次时间 单位 日 */
+#define DF_UPDATE_TIME  30
+
+// 默认参数定义
+#define DEFAULT_LED_STATE    3   // LED默认状态
+#define DEFAULT_U1_BAUDRATE  5   // U1默认波特率（115200）
+#define DEFAULT_U3_BAUDRATE  5   // U3默认波特率（115200）
+#define DEFAULT_LOG_DETAIL   1   // 日志等级
 
 /* ESP8266 初始化超时重试次数 */
 #define DF_TIMEOUT 2

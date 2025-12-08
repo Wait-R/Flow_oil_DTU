@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include "delay.h"
+#include "free_menu.h"
 
 /**
   * 数据存储格式：
@@ -382,7 +383,7 @@ uint8_t OLED_IsInAngle(int16_t X, int16_t Y, int16_t StartAngle, int16_t EndAngl
 
 
 /*功能函数*********************/
-
+extern uint32_t fps_frame_count;
 /**
   * 函    数：将OLED显存数组更新到OLED屏幕
   * 参    数：无
@@ -394,6 +395,7 @@ uint8_t OLED_IsInAngle(int16_t X, int16_t Y, int16_t StartAngle, int16_t EndAngl
   */
 void OLED_Update(void)
 {
+	fps_frame_count++;
 	uint8_t j;
 	/*遍历每一页*/
 	for (j = 0; j < 8; j ++)
@@ -1455,7 +1457,116 @@ void OLED_DrawArc(int16_t X, int16_t Y, uint8_t Radius, int16_t StartAngle, int1
 }
 
 /*********************功能函数*/
+/**
+ * @brief 判断单个像素是否在圆角矩形范围内
+ * @param px/py 待判断的像素坐标
+ * @param x/y   圆角矩形左上角坐标
+ * @param w/h   圆角矩形宽/高
+ * @param r     圆角半径（建议取值1~5，需≤w/2且≤h/2）
+ * @retval 1=在范围内，0=不在
+ */
+static uint8_t OLED_IsInRoundRect(int16_t px, int16_t py, int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r)
+{
+    // 边界保护：半径不能超过宽/高的一半
+    r = (r > w/2) ? w/2 : r;
+    r = (r > h/2) ? h/2 : r;
 
+    int16_t x1 = x + r;          // 左上圆角右边界
+    int16_t x2 = x + w - r - 1;  // 右上圆角左边界
+    int16_t y1 = y + r;          // 左上圆角下边界
+    int16_t y2 = y + h - r - 1;  // 左下圆角上边界
+
+    // 1. 中间矩形区域（无圆角）
+    if (px >= x1 && px <= x2 && py >= y && py <= y + h - 1) return 1;
+    if (py >= y1 && py <= y2 && px >= x && px <= x + w - 1) return 1;
+
+    // 2. 四个圆角区域（四分之一圆判断）
+    int16_t dx, dy;
+    // 左上圆角
+    dx = x1 - px;
+    dy = y1 - py;
+    if (px >= x && px <= x1 && py >= y && py <= y1 && (dx*dx + dy*dy) <= r*r) return 1;
+    // 右上圆角
+    dx = px - x2;
+    dy = y1 - py;
+    if (px >= x2 && px <= x + w - 1 && py >= y && py <= y1 && (dx*dx + dy*dy) <= r*r) return 1;
+    // 左下圆角
+    dx = x1 - px;
+    dy = py - y2;
+    if (px >= x && px <= x1 && py >= y2 && py <= y + h - 1 && (dx*dx + dy*dy) <= r*r) return 1;
+    // 右下圆角
+    dx = px - x2;
+    dy = py - y2;
+    if (px >= x2 && px <= x + w - 1 && py >= y2 && py <= y + h - 1 && (dx*dx + dy*dy) <= r*r) return 1;
+
+    return 0;
+}
+
+/**
+ * @brief 取反绘制圆角矩形（核心函数）
+ * @param x/y   左上角坐标
+ * @param w/h   宽/高
+ * @param r     圆角半径
+ */
+static void OLED_ReverseRoundRect(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t r)
+{
+    int16_t px, py;
+    // 遍历整个矩形区域，仅对圆角范围内的像素取反
+    for (py = y; py < y + h; py++)
+    {
+        for (px = x; px < x + w; px++)
+        {
+            // 坐标越界保护（和OLED_ReverseArea逻辑一致）
+            if (px < 0 || px > 127 || py < 0 || py > 63) continue;
+            
+            // 仅当像素在圆角矩形内时，执行取反
+            if (OLED_IsInRoundRect(px, py, x, y, w, h, r))
+            {
+                OLED_DisplayBuf[py / 8][px] ^= 0x01 << (py % 8);
+            }
+        }
+    }
+}
+
+void menu_hal_draw_string(int x, int y, const char *str) // 绘制字符串函数
+{
+	#if(MENU_FONT_HEIGHT == 16 && MENU_FONT_WIDTH == 8)
+		OLED_ShowString(x + 0,  y + 0, (char *)str, OLED_8X16);
+	#elif(MENU_FONT_HEIGHT == 8 && MENU_FONT_WIDTH == 6)
+		OLED_ShowString(x + 0,  y + 0, (char *)str, OLED_6X8);
+	#else
+		#error "MENU_ITEM_HEIGHT or MENU_ITEM_WIDTH setting error!"
+	#endif
+}
+
+void menu_hal_draw_cursor(int x, int y, int w, int h, int cursor_type) // 绘制光标函数
+{
+	// OLED_ReverseArea(x, y, w, h);
+	// 圆角半径（建议取值1~5，根据菜单项大小调整，3是适配0.96寸OLED的常用值）
+    uint8_t round_radius = 2;
+    
+    // 调用圆角矩形取反函数（替换原有的矩形取反）
+    OLED_ReverseRoundRect(x+1, y, (uint8_t)w-2, (uint8_t)h-1, round_radius);
+}
+
+void menu_hal_draw_scroll(int numerator, int denominator) // 绘制滚动条函数
+{
+    // if (menu_get_focus()->item_index)
+    // {
+    //     char scroll_bar[8];
+    //     sprintf(scroll_bar, "%d/%d", numerator, denominator);
+    //     OLED_ShowString(MENU_PANEL_WIDTH - strlen(scroll_bar) * 6, 0, (char *)scroll_bar, 6);
+    // }
+
+    int tolal_h = MENU_PANEL_HEIGHT - MENU_TITLE * MENU_ITEM_HEIGHT;
+    int scroll_y1 = tolal_h * (numerator - 1) / denominator;
+    int scroll_y2 = tolal_h * numerator / denominator;
+    OLED_DrawRectangle(MENU_PANEL_WIDTH - 4, MENU_TITLE * MENU_ITEM_HEIGHT, 4, tolal_h, 0);
+    OLED_DrawRectangle(MENU_PANEL_WIDTH - 3, MENU_TITLE * MENU_ITEM_HEIGHT + scroll_y1, 2, scroll_y2 - scroll_y1 + 1, 1);
+
+    // OLED_DrawRectangle(0, 0, MENU_PANEL_WIDTH, MENU_ITEM_HEIGHT, 0);
+    // OLED_DrawRectangle(0, 0, MENU_PANEL_WIDTH, MENU_PANEL_HEIGHT, 0);
+}
 
 /*****************江协科技|版权所有****************/
 /*****************jiangxiekeji.com*****************/

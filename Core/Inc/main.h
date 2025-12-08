@@ -45,6 +45,8 @@ extern "C" {
 #define OK 0
 #define NO 1
 
+#include "OUTLOG.h"
+
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

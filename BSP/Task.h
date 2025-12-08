@@ -10,6 +10,7 @@
 #include "E4GDTU.h"
 #include "cmsis_os.h"
 #include "Capture_Traffic.h"
+#include "OUTLOG.h"
 
 #define EVENTBIT_0      (1 << 0)            /* ÊÂ¼þÎ» */
 #define EVENTBIT_1      (1 << 1)

@@ -31,5 +31,9 @@ flow_oil_v5\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rt
 flow_oil_v5\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 flow_oil_v5\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 flow_oil_v5\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+flow_oil_v5\stm32f1xx_it.o: ../BSP/OUTLOG.h
+flow_oil_v5\stm32f1xx_it.o: ../Core/Inc/main.h
+flow_oil_v5\stm32f1xx_it.o: ../BSP/flowConfig.h
 flow_oil_v5\stm32f1xx_it.o: ../Core/Inc/stm32f1xx_it.h
 flow_oil_v5\stm32f1xx_it.o: ../BSP/Key.h
+flow_oil_v5\stm32f1xx_it.o: C:\Users\Rain\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h

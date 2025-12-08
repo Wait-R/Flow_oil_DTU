@@ -134,7 +134,7 @@ void MX_FREERTOS_Init(void) {
   StorageDataTaskHandle = osThreadCreate(osThread(StorageDataTask), NULL);
 
   /* definition and creation of oledTask */
-  osThreadDef(oledTask, oled_Task, osPriorityBelowNormal, 0, 512);
+  osThreadDef(oledTask, oled_Task, osPriorityBelowNormal, 0, 256);
   oledTaskHandle = osThreadCreate(osThread(oledTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -150,7 +150,7 @@ void MX_FREERTOS_Init(void) {
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const * argument)
+__weak void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   HAL_IWDG_Init(&hiwdg);

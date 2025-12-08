@@ -18,6 +18,8 @@ extern uint32_t eeprom_Count; // 存储加油次数
 
 #define COEFFICIENT_PAGE_ADDR  PAGE_ADDR(2)    // 第2页  存储加油次数
 
+#define PARAM_PAGE_NUM         PAGE_ADDR(3)    // 第3页  存储运行时参数 
+
 // 定义油量+时间戳的存储结构体
 typedef struct 
 {
@@ -42,6 +44,9 @@ uint8_t eeprom_write_double_to_page2(double data);
 void eeprom_Coefficient_Init(void);
 uint8_t eeprom_increment_counter(void);
 uint8_t eeprom_read_counter(uint32_t* counter);
+uint8_t Auto_Update_TimeStamp(void);
+uint8_t eeprom_save_device_params(void);
+uint8_t eeprom_read_device_params(void);
 
 #endif
 

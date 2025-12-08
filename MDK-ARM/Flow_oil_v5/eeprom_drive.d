@@ -32,6 +32,9 @@ flow_oil_v5\eeprom_drive.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rt
 flow_oil_v5\eeprom_drive.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 flow_oil_v5\eeprom_drive.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 flow_oil_v5\eeprom_drive.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+flow_oil_v5\eeprom_drive.o: ../BSP/OUTLOG.h
+flow_oil_v5\eeprom_drive.o: ../Core/Inc/main.h
+flow_oil_v5\eeprom_drive.o: ../BSP/flowConfig.h
 flow_oil_v5\eeprom_drive.o: ..\BSP\at24c64.h
 flow_oil_v5\eeprom_drive.o: C:\Users\Rain\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\time.h
 flow_oil_v5\eeprom_drive.o: ..\BSP\i2c.h
@@ -53,7 +56,6 @@ flow_oil_v5\eeprom_drive.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/t
 flow_oil_v5\eeprom_drive.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
 flow_oil_v5\eeprom_drive.o: ../Core/Inc/usart.h
 flow_oil_v5\eeprom_drive.o: ..\BSP\E4GDTU.h
-flow_oil_v5\eeprom_drive.o: ..\BSP\flowConfig.h
 flow_oil_v5\eeprom_drive.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
 flow_oil_v5\eeprom_drive.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 flow_oil_v5\eeprom_drive.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
@@ -61,3 +63,5 @@ flow_oil_v5\eeprom_drive.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/e
 flow_oil_v5\eeprom_drive.o: ..\BSP\Capture_Traffic.h
 flow_oil_v5\eeprom_drive.o: C:\Users\Rain\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 flow_oil_v5\eeprom_drive.o: C:\Users\Rain\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+flow_oil_v5\eeprom_drive.o: ..\BSP\myRTC.h
+flow_oil_v5\eeprom_drive.o: ..\BSP\app_menu.h

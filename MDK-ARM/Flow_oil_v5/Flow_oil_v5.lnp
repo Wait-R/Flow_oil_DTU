@@ -50,6 +50,9 @@
 "flow_oil_v5\oled_data.o"
 "flow_oil_v5\key.o"
 "flow_oil_v5\capture_traffic.o"
+"flow_oil_v5\free_menu.o"
+"flow_oil_v5\app_menu.o"
+"flow_oil_v5\outlog.o"
 --strict --scatter "Flow_oil_v5\Flow_oil_v5.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

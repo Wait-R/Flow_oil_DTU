@@ -31,6 +31,9 @@ flow_oil_v5\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rtc_ex.h
 flow_oil_v5\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 flow_oil_v5\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 flow_oil_v5\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+flow_oil_v5\main.o: ../BSP/OUTLOG.h
+flow_oil_v5\main.o: ../Core/Inc/main.h
+flow_oil_v5\main.o: ../BSP/flowConfig.h
 flow_oil_v5\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
 flow_oil_v5\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
 flow_oil_v5\main.o: ../Core/Inc/FreeRTOSConfig.h

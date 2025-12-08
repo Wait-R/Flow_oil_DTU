@@ -45,6 +45,8 @@ void MX_USART3_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
+void Runing_UARTSET_B(UART_HandleTypeDef* huart, int BaudRate, uint8_t* IT_BUFF);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

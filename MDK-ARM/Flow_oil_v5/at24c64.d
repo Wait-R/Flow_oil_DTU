@@ -32,5 +32,8 @@ flow_oil_v5\at24c64.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rtc_ex.
 flow_oil_v5\at24c64.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 flow_oil_v5\at24c64.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 flow_oil_v5\at24c64.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+flow_oil_v5\at24c64.o: ../BSP/OUTLOG.h
+flow_oil_v5\at24c64.o: ../Core/Inc/main.h
+flow_oil_v5\at24c64.o: ../BSP/flowConfig.h
 flow_oil_v5\at24c64.o: ../Core/Inc/gpio.h
 flow_oil_v5\at24c64.o: ..\BSP\at24c64.h

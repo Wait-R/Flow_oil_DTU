@@ -137,7 +137,7 @@ HAL_StatusTypeDef KK_RTC_SetTime(struct tm *time){
  */
 struct tm *KK_RTC_GetTime(void) {
     time_t unixTime = RTC_ReadTimeCounter(&hrtc);
-    // printf("RTC Read TimeCounter: %ld\r\n", unixTime);
+//		_log(LOG_DEBUG,"RTC Read TimeCounter: %ld\r\n", unixTime);
     tm_t* timeinfo;
     timeinfo = gmtime(&unixTime); // 获取UTC时间结构体
     return timeinfo;
@@ -233,12 +233,7 @@ uint8_t RTC_GET_TIME(tm_t* datetime)
  */
 time_t convert_to_timestamp(void)
 {
-    // tm_t timeinfo = {0};
-    // // 获取时间信息
-	// RTC_GET_TIME(&timeinfo);
-    // // 转换为时间戳
-    // return mktime(&timeinfo) - 8 * 3600; // 减去8小时的时区偏移
-    return RTC_ReadTimeCounter(&hrtc);
+  return RTC_ReadTimeCounter(&hrtc);
 }
 
 /**

@@ -22,6 +22,26 @@
 
 /* USER CODE BEGIN 0 */
 
+#include "OUTLOG.h"
+
+// ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Þ¸Ä²ï¿½ï¿½ï¿½ï¿½ï¿½
+void Runing_UARTSET_B(UART_HandleTypeDef* huart, int BaudRate, uint8_t * IT_BUFF)
+{
+  _log(LOG_WARN, "ÐÞ¸Ä²¨ÌØÂÊÎª£º%d", BaudRate);
+
+  huart->Init.BaudRate = BaudRate;
+
+  if (HAL_UART_Init(huart) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  // ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½Ð¶Ï¼ÇµÃ´ï¿?
+  if(IT_BUFF != NULL) {
+    HAL_UART_Receive_IT(huart, IT_BUFF, 1);	
+  }
+}
+
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;

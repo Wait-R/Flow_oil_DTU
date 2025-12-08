@@ -44,10 +44,12 @@ flow_oil_v5\task.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rtc_ex.h
 flow_oil_v5\task.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 flow_oil_v5\task.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 flow_oil_v5\task.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+flow_oil_v5\task.o: ../BSP/OUTLOG.h
+flow_oil_v5\task.o: ../Core/Inc/main.h
+flow_oil_v5\task.o: ../BSP/flowConfig.h
 flow_oil_v5\task.o: ../Core/Inc/usart.h
 flow_oil_v5\task.o: ..\BSP\E4GDTU.h
 flow_oil_v5\task.o: C:\Users\Rain\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\time.h
-flow_oil_v5\task.o: ..\BSP\flowConfig.h
 flow_oil_v5\task.o: ..\BSP\eeprom_drive.h
 flow_oil_v5\task.o: ..\BSP\at24c64.h
 flow_oil_v5\task.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
@@ -64,3 +66,4 @@ flow_oil_v5\task.o: ../Core/Inc/iwdg.h
 flow_oil_v5\task.o: ..\BSP\OLED.h
 flow_oil_v5\task.o: ..\BSP\OLED_Data.h
 flow_oil_v5\task.o: ..\BSP\Key.h
+flow_oil_v5\task.o: ..\BSP\app_menu.h

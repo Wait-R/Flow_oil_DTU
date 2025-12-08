@@ -145,7 +145,7 @@ uint8_t DTU_Init(void)
 	HAL_UART_Receive_IT(&huart3, (uint8_t*)DTURX_Data, 1);
 	vTaskDelay(1000);
 
-	printf("1. 进入指令模式\r\n");    	// 进入指令模式
+	_log(LOG_DEBUG, "1. 进入指令模式");    	// 进入指令模式
 	while(DTU_SendCmd("+++", "OK")) {
 		vTaskDelay(100);
 		time_out += 1;
@@ -156,7 +156,7 @@ uint8_t DTU_Init(void)
 	}
 	vTaskDelay(100);
 
-	printf("2. 测试AT指令\r\n");    	// 测试
+	_log(LOG_DEBUG, "2. 测试AT指令");    	// 测试
 	while(DTU_SendCmd("AT\r\n", "OK")) {
 		vTaskDelay(100);
 		time_out += 1;
@@ -167,7 +167,7 @@ uint8_t DTU_Init(void)
 	}
 	vTaskDelay(100);
 
-	printf("2. 设置不缓存数据\r\n");    	// 设置不缓存数据
+	_log(LOG_DEBUG, "3. 设置不缓存数据");    	// 设置不缓存数据
 	while(DTU_SendCmd("AT+CACHEEN=OFF\r\n", "OK")) {
 		vTaskDelay(100);
 		time_out += 1;
@@ -178,7 +178,7 @@ uint8_t DTU_Init(void)
 	}
 	vTaskDelay(100);
 
-	printf("3. AT+WKMOD1=MQTT...\r\n");    	// 工作模式设为MQTT
+	_log(LOG_DEBUG, "4. AT+WKMOD1=MQTT...");    	// 工作模式设为MQTT
 	while(DTU_SendCmd("AT+WKMOD1=MQTT\r\n", "OK")) {
 		vTaskDelay(100);
 		time_out += 1;
@@ -189,7 +189,7 @@ uint8_t DTU_Init(void)
 	}
 	vTaskDelay(100);
 
-	printf("4. AT+MQTTSV1=8.137.124.220,1883...\r\n");    	// 设置域名或端口
+	_log(LOG_DEBUG, "5. AT+MQTTSV1=8.137.124.220,1883...");    	// 设置域名或端口
 	while(DTU_SendCmd("AT+MQTTSV1=8.137.124.220,1883\r\n", "OK")) {
 		vTaskDelay(100);
 		time_out += 1;
@@ -200,7 +200,7 @@ uint8_t DTU_Init(void)
 	}
 	vTaskDelay(100);
 
-	printf("5. AT+MQTTCONN=esp8266Client,test,12345678,60,1...\r\n");    	// 设置MQTT连接参数
+	_log(LOG_DEBUG, "6. AT+MQTTCONN=esp8266Client,test,12345678,60,1...");    	// 设置MQTT连接参数
 	while(DTU_SendCmd("AT+MQTTCONN=esp8266Client,test,12345678,120,1\r\n", "OK")) {
 		vTaskDelay(100);
 		time_out += 1;
@@ -211,7 +211,7 @@ uint8_t DTU_Init(void)
 	}
 	vTaskDelay(100);
 
-	printf("6. AT+MQTTSUB1=/fuel/data,0...\r\n");    	// 设置订阅主题
+	_log(LOG_DEBUG, "7. AT+MQTTSUB1=/fuel/data,0...");    	// 设置订阅主题
 	while(DTU_SendCmd("AT+MQTTSUB1=/fuel/data,0\r\n", "OK")) {
 		vTaskDelay(100);
 		time_out += 1;
@@ -222,7 +222,7 @@ uint8_t DTU_Init(void)
 	}
 	vTaskDelay(100);
 
-	printf("7. AT+MQTTPUB1=/fuel/data,0,0...\r\n");    	// 设置发布主题
+	_log(LOG_DEBUG, "8. AT+MQTTPUB1=/fuel/data,0,0...");    	// 设置发布主题
 	while(DTU_SendCmd("AT+MQTTPUB1=/fuel/data,0,0\r\n", "OK")) {
 		vTaskDelay(100);
 		time_out += 1;
@@ -233,7 +233,7 @@ uint8_t DTU_Init(void)
 	}
 	vTaskDelay(100);
 
-	printf("8. AT+S...\r\n");    	// 保存配置
+	_log(LOG_DEBUG, "9. AT+S...");    	// 保存配置
 	while(DTU_SendCmd("AT+S\r\n", "OK")) {
 		vTaskDelay(100);
 		time_out += 1;
@@ -244,7 +244,7 @@ uint8_t DTU_Init(void)
 	}
 	vTaskDelay(1000);
 
-	printf("9. DTU_Init OK\r\n");
+	_log(LOG_DEBUG, "10.DTU_Init OK");
 	return OK;
 }
 
@@ -256,14 +256,14 @@ uint8_t DTU_Init(void)
 static uint8_t DTU_Send_DataFloat_Internal(OilDataWithTime* oil_data)
 {
 	uint8_t valen;
-	printf("已接收上传数据: %.3f L, 时间戳：%ld S\r\n", oil_data->oil_flow, oil_data->time_stamp);
+	_log(LOG_DEBUG,"已接收上传数据: %.3f L, 时间戳：%ld S", oil_data->oil_flow, oil_data->time_stamp);
 	
 	sprintf(mqtt_payload, "{\"timestamp\":%ld000,\"fuel_total\":%f,\"number\":%d}\r\n", oil_data->time_stamp, oil_data->oil_flow, SERIAL_NUMBER);
-	printf("发送载荷%s", mqtt_payload);
+	_log(LOG_DEBUG,"发送载荷%s", mqtt_payload);
 	if(DTU_SendCmd(mqtt_payload, mqtt_payload) == OK) {
-		printf("数据上传成功！！！\r\n");
+		_log(LOG_DEBUG, "数据上传成功！！！");
 		if(xQueueSend(DeleteQueueHandle,&valen,0) != pdPASS) {
-			printf("错误：无法发送到请求删除队列\r\n");
+			_log(LOG_ERROR, "错误：无法发送到请求删除队列\r\n");
 			return NO;
 		}
 	}
@@ -301,7 +301,7 @@ uint8_t DTU_IsConnected_MQTT(void)
 	uint8_t time_out = 0;
 	uint8_t sta = OK;
 
-	// printf("1. 进入指令模式\r\n");    	// 进入指令模式
+//	_log(LOG_DEBUG, "1. 进入指令模式");    	// 进入指令模式
 	while(DTU_SendCmd("+++", "OK")) {
 		vTaskDelay(100);
 		time_out += 1;
@@ -312,7 +312,7 @@ uint8_t DTU_IsConnected_MQTT(void)
 	}
 	vTaskDelay(100);
 
-	// printf("2. 查询连接状态\r\n");    	// 查询连接状态
+//	_log(LOG_DEBUG, "2. 查询连接状态");    	// 查询连接状态
 	while(DTU_SendCmd("AT+SOCKLK1?\r\n", "Connected")) {
 		vTaskDelay(100);
 		time_out += 1;
@@ -324,7 +324,7 @@ uint8_t DTU_IsConnected_MQTT(void)
 	}
 	vTaskDelay(100);
 
-	// printf("3. 退出指令模式\r\n");    	// 退出指令模式
+//	_log(LOG_DEBUG, "3. 退出指令模式");    	// 退出指令模式
 	while(DTU_SendCmd("AT+ENTM\r\n", "OK")) {
 		vTaskDelay(100);
 		time_out += 1;

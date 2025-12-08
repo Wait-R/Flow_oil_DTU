@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "Key.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -61,6 +62,46 @@ extern TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN EV */
 
+// __asm void HardFault_Handler(void)
+// {
+// 		IMPORT  HardFault_Handler_C
+//     TST     lr, #4
+//     ITE     EQ
+//     MRSEQ   r0, MSP
+//     MRSNE   r0, PSP
+//     B       HardFault_Handler_C
+// }
+
+// void HardFault_Handler_C(uint32_t *hardfault_args)
+// {
+//     uint32_t stacked_r0  = hardfault_args[0];
+//     uint32_t stacked_r1  = hardfault_args[1];
+//     uint32_t stacked_r2  = hardfault_args[2];
+//     uint32_t stacked_r3  = hardfault_args[3];
+//     uint32_t stacked_r12 = hardfault_args[4];
+//     uint32_t stacked_lr  = hardfault_args[5];
+//     uint32_t stacked_pc  = hardfault_args[6];
+//     uint32_t stacked_psr = hardfault_args[7];
+
+//     char msg[160];
+//     snprintf(msg, sizeof(msg),
+//         "HardFault!\r\n"
+//         "R0  = 0x%08X\r\n"
+//         "R1  = 0x%08X\r\n"
+//         "R2  = 0x%08X\r\n"
+//         "R3  = 0x%08X\r\n"
+//         "R12 = 0x%08X\r\n"
+//         "LR  = 0x%08X\r\n"
+//         "PC  = 0x%08X\r\n"
+//         "PSR = 0x%08X\r\n",
+//         stacked_r0, stacked_r1, stacked_r2, stacked_r3,
+//         stacked_r12, stacked_lr, stacked_pc, stacked_psr
+//     );
+//     printf("%s", msg);
+
+//     while(1);
+// }
+
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -87,7 +128,6 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
-
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
   {
