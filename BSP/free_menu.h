@@ -49,7 +49,7 @@ void menu_hal_draw_scroll(int numerator, int denominator);
 #define MENU_ITEM_HEIGHT     (10)       // 单个菜单项的高度（像素）
 #define MENU_FONT_WIDTH      (6)        // 字体宽度（像素/字符）
 #define MENU_FONT_HEIGHT     (8)       // 字体高度（像素）
-#define MENU_ANIMATION_SPEED (0.12f)    // 光标/菜单项动画速度[0,1]，1=无动画
+#define MENU_ANIMATION_SPEED (0.2f)    // 光标/菜单项动画速度[0,1]，1=无动画
 #define MENU_TITLE           (1)        // 是否显示菜单标题（1=显示，0=不显示）
 
 /************************** 菜单事件定义 **************************/

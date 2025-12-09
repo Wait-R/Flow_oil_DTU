@@ -143,8 +143,9 @@ struct tm *KK_RTC_GetTime(void) {
     return timeinfo;
 }
 
-void KK_RTC_Init(void){
-	uint32_t initFlag = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR1);
+void KK_RTC_Init(void)
+{
+  uint32_t initFlag = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR1);
 	if(initFlag == RTC_INIT_FLAG) return;
 	if (HAL_RTC_Init(&hrtc) != HAL_OK){
 		Error_Handler();

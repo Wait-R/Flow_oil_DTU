@@ -21,28 +21,29 @@ void UploadData_Task(void const * argument)
   uint32_t notify_value = 0; /* 任务通知值 */
   OilDataWithTime read_data; /* 读取的油量+时间戳数据结构体 */
 
-  if(DTU_Init() == OK) {
-    _log(LOG_DEBUG,"DTU模块初始化成功");
-  }
-  else {
-    _log(LOG_ERROR,"DTU模块初始化失败");
-  }
+  xTaskNotifyWait(0x00, EVENTBIT_0 | EVENTBIT_1, &notify_value, 5000);
 
-  if(convert_to_timestamp() < get_compile_timestamp()) { /* 如果当前时间小于编译时间-进行校准 */
-    _log(LOG_WARN, "RTC时间异常，正在校准RTC时间...");
-    if(DTU_Get_NTP_Time() == OK) {
-      _log(LOG_DEBUG, "RTC时间校准成功");
+  if(notify_value & EVENTBIT_1) {
+    _log(LOG_WARN, "DTU NO Init");
+    if(DTU_Init() == OK) {
+      _log(LOG_DEBUG,"DTU模块初始化成功");
     }
     else {
-      _log(LOG_WARN, "RTC时间校准失败");
+      _log(LOG_ERROR,"DTU模块初始化失败");
     }
   }
-
-  _log(LOG_DEBUG,"当前RTC时间戳：%ld", convert_to_timestamp());
-
+  
+  if(convert_to_timestamp() < get_compile_timestamp()) { /* 如果当前时间小于编译时间-进行校准 */
+    _log(LOG_WARN, "RTC时间异常，准备RTC时间...");
+    xTaskNotifyFromISR(UploadDataTaskHandle, EVENTBIT_0, eSetBits, pdFALSE);// 通知上传任务校准时间
+  }
+  else {
+    _log(LOG_DEBUG,"当前RTC时间戳：%ld", convert_to_timestamp());
+  }
+  
   for(;;)
   {
-    xTaskNotifyWait(0x00, EVENTBIT_0, &notify_value, 0);
+    xTaskNotifyWait(0x00, EVENTBIT_0 | EVENTBIT_1, &notify_value, 0);
     if(notify_value & EVENTBIT_0) {
       _log(LOG_DEBUG, "收到校准时间通知，正在校准RTC时间...");
       DTU_ON();
@@ -164,6 +165,7 @@ void StorageData_Task(void const * argument)
     AT24C128_EraseAll(); // 擦除整个EEPROM
     AT24C128_WriteByte(COUNT_PAGE_ADDR, 0xA5); // 标记已初始化
     vTaskDelay(100);
+    xTaskNotifyFromISR(UploadDataTaskHandle, EVENTBIT_1, eSetBits, pdFALSE);// 通知上传任务初始化DTU
   }
   else {
     _log(LOG_DEBUG, "EEPROM 已初始化");
