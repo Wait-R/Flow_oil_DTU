@@ -189,8 +189,8 @@ void StorageData_Task(void const * argument)
 
   for(;;)
   {
-    if(xQueueReceive(SendQueueHandle, &receivedValue, 0) == pdPASS) {
-      oil_data.time_stamp = convert_to_timestamp();
+    if(xQueueReceive(SendQueueHandle, &receivedValue, 0) == pdPASS) {  /* 接收到队列发送的流量信息 */
+      oil_data.time_stamp = convert_to_timestamp();  // 获取当前RTC时间
 
       oil_data.oil_flow = receivedValue;
       switch(record_Oil(oil_data)) {
@@ -236,7 +236,8 @@ void oled_Task(void const* argument)
   app_menu(); // 启动菜单任务
 }
 
-void StartDefaultTask(void const * argument)
+// LED控制及喂狗
+void StartDefaultTask(void const* argument)
 {
   HAL_IWDG_Init(&hiwdg);
   uint32_t notify_value = 0; /* 任务通知值 */
