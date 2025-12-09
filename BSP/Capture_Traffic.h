@@ -7,5 +7,6 @@ extern double coefficient; // 流量系数
 
 double Get_Traffic(void);
 void Clear_Traffic(void);
+void Traffic_Init(void);
 
 #endif

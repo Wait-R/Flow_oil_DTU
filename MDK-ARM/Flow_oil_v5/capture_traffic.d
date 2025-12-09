@@ -35,3 +35,4 @@ flow_oil_v5\capture_traffic.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal
 flow_oil_v5\capture_traffic.o: ../BSP/OUTLOG.h
 flow_oil_v5\capture_traffic.o: ../Core/Inc/main.h
 flow_oil_v5\capture_traffic.o: ../BSP/flowConfig.h
+flow_oil_v5\capture_traffic.o: ../Core/Inc/tim.h

@@ -27,7 +27,7 @@
 // ����ʱ�޸Ĳ�����
 void Runing_UARTSET_B(UART_HandleTypeDef* huart, int BaudRate, uint8_t * IT_BUFF)
 {
-  _log(LOG_WARN, "�޸Ĳ�����Ϊ��%d", BaudRate);
+  _log(LOG_WARN, "�޸Ĳ�����Ϊ��%d", BaudRate);
 
   huart->Init.BaudRate = BaudRate;
 
@@ -36,7 +36,7 @@ void Runing_UARTSET_B(UART_HandleTypeDef* huart, int BaudRate, uint8_t * IT_BUFF
     Error_Handler();
   }
 
-  // ����д����жϼǵô�?
+  // ����д����жϼǵô�?
   if(IT_BUFF != NULL) {
     HAL_UART_Receive_IT(huart, IT_BUFF, 1);	
   }

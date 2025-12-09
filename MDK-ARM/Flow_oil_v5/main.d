@@ -50,5 +50,6 @@ flow_oil_v5\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 flow_oil_v5\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
 flow_oil_v5\main.o: ../Core/Inc/iwdg.h
 flow_oil_v5\main.o: ../Core/Inc/rtc.h
+flow_oil_v5\main.o: ../Core/Inc/tim.h
 flow_oil_v5\main.o: ../Core/Inc/usart.h
 flow_oil_v5\main.o: ../Core/Inc/gpio.h

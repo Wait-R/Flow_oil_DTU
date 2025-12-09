@@ -102,6 +102,8 @@ void ProcesData_Task(void const * argument)
   float result = 0; /* 当前油量 */
   float last_result = 0; /* 上一次油量 */
   uint8_t unchanged_count = 0; /* 静止加油标志 */
+	
+	Traffic_Init();  // 初始化编码器计数
 
   last_result = Get_Traffic();
   _log(LOG_DEBUG, "首次启动，仅记录初始流量 %.3f L,不上传", last_result);
