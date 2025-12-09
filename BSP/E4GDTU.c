@@ -128,7 +128,7 @@ uint8_t DTU_OFF(void)
 uint8_t DTU_ON(void)
 {
 	HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_RESET);   // »Ö¸´
-	vTaskDelay(2000);
+	vTaskDelay(3000);
 	DTU_Clear();
 	return OK;
 }

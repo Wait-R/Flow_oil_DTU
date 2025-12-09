@@ -91,7 +91,6 @@ void UploadData_Task(void const * argument)
     }
     else {
       DTU_OFF();
-      vTaskDelay(10000);
     }
   }
 }
