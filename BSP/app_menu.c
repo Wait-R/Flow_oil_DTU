@@ -19,7 +19,7 @@ uint8_t UPdata_UP_flag = 1;  // 0：不上传 1：上传 （该参数不保存，仅限模拟断网调
 
 void app_menu(void)
 {
-    menu_main(false);
+    menu_main(false);  // 默认不打开菜单
 
     while (1)
     {
@@ -189,6 +189,10 @@ char* menu_Time(bool action)
 // 当前流量菜单项
 char* menu_Current_Flow(bool action)
 {
+    if(action) {
+        menu_back_focus();
+        _log(LOG_WARN,"关闭菜单");
+    }
     static uint8_t Current_Flow_buf[18];
     float current_flow = (float)Get_Traffic();
     sprintf((char*)Current_Flow_buf, "flow: %.2f L", current_flow);
@@ -208,6 +212,7 @@ char* menu_History_Max_Flow(bool action)
     }
 
     if(action) {
+        _log(LOG_DEBUG, "清除本次加油流量 %.2f", current_Max_Flow);
         current_Max_Flow = 0.0f; // 重置最大流量值
     }
 
@@ -887,16 +892,16 @@ char *menu_main(bool action)
 
         static MenuItemTypeFunc fn_items[] = {
             menu_main_title,  // 主菜单标题
-            menu_Current_Flow,
-            menu_History_Max_Flow,
-            menu_eeprom_data,
-            menu_Total_Refuel_Times,
-            menu_Serial_NUM,
-            menu_fps_display,
-            menu_Data,
-            menu_Time,
-            menu_stack_view,
-            menu_set_sys,
+            menu_Current_Flow,  // 当前流量
+            menu_History_Max_Flow,  // 历史最大流量
+            menu_eeprom_data,   // EEPROM当前数据个数
+            menu_Total_Refuel_Times,  // 累计发送了多少个数据
+            menu_Serial_NUM,     // 车辆编号
+            menu_fps_display,    // 屏幕刷新帧率
+            menu_Data,           // 日期信息
+            menu_Time,           // 时间信息
+            menu_stack_view,     // 堆栈信息
+            menu_set_sys,        // 系统参数设置
             menu_Back_Top,
             NULL              // 结束标记
         };

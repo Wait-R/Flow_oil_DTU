@@ -160,7 +160,6 @@ void KK_RTC_Init(void)
 	};
 	KK_RTC_SetTime(&time);
 	HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR1, RTC_INIT_FLAG);
-
 }
 
 

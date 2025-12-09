@@ -6,7 +6,7 @@
 [Found keyword]: ----------Execution Region----------
 [name]:  ER_IROM1 
 [Exec base]: 0x8000000
-[Size]: 0xbbc0
+[Size]: 0xbd70
 [Max]: 0x10000
 [Found keyword]: ----------Execution Region----------
 [name]:  RW_IRAM1 
@@ -17,7 +17,7 @@
   RW_IRAM1 :0x20000000
    20.00 KB :|¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö___|   85.94 % (   17.19 KB /    20.00 KB) [2880 B]
   ER_IROM1 :0x8000000
-   64.00 KB :|¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö______|   73.34 % (   46.94 KB /    64.00 KB) [17472 B]
+   64.00 KB :|¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö¡ö______|   74.00 % (   47.36 KB /    64.00 KB) [17040 B]
 [export csv]: ./Flow_oil_v5_sort_by_flash.csv
 [export csv]: ./Flow_oil_v5_sort_by_ram.csv
 [export xlsx]: Flow_oil_v5_analysis.xlsx
